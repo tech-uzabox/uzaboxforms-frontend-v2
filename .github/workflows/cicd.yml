@@ -46,7 +46,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/frontend-portal:latest
-            ghcr.io/${{ github.repository }}/frontend-portal:${{ needs.commit-hash.outputs.commit_hash }}
+            ghcr.io/${{ github.repository }}/frontendv2:latest
+            ghcr.io/${{ github.repository }}/frontendv2:${{ needs.commit-hash.outputs.commit_hash }}
 
 
