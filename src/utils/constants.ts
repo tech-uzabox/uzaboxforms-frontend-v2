@@ -1,0 +1,28 @@
+export const questionOptions = [
+    { title: 'Add Section', value: 'Add Section', icon: 'radix-icons:section' },
+    { title: 'Add Title', value: 'Add Title', icon: 'pajamas:title' },
+    { title: 'Add Description', value: 'Add Description', icon: 'fluent:text-description-16-filled' },
+    { title: 'Add URL', value: 'Add URL', icon: 'ic:outline-link' },
+    { title: 'Add Document', value: 'Add Document', icon: 'humbleicons:document' },
+    { title: 'Add Image', value: 'Add Image', icon: 'ic:outline-image' },
+    { title: 'Add Video', value: 'Add Video', icon: 'ri:video-line' },
+    { title: 'Short Text', value: 'Short Text', icon: 'pajamas:title' },
+    { title: 'Email', value: 'Email', icon: 'line-md:email-plus' },
+    { title: 'Phone Number', value: 'Phone Number', icon: 'solar:phone-linear' },
+    { title: 'Paragraph', value: 'Paragraph', icon: 'mingcute:paragraph-line' },
+    { title: 'Number', value: 'Number', icon: 'f7:list-number' },
+    { title: 'Checkbox', value: 'Checkbox', icon: 'radix-icons:checkbox' },
+    { title: 'Dropdown', value: 'Dropdown', icon: 'material-symbols-light:dropdown-outline-rounded' },
+    { title: 'Upload', value: 'Upload', icon: 'uil:upload' },
+    { title: 'Date', value: 'Date', icon: 'ph:calendar' },
+    { title: 'Time', value: 'Time', icon: 'ph:clock' },
+    { title: 'Date and time', value: 'DateTime', icon: 'ph:clock' },
+    { title: 'Date Range', value: 'Date Range', icon: 'heroicons:calendar-date-range-solid' },
+    { title: 'Signature', value: 'Signature', icon: 'ph:signature' },
+    { title: 'Add Calculation', value: 'Add Calculation', icon: 'carbon:calculation' },
+    { title: 'From Database', value: 'From Database', icon: 'hugeicons:database' },
+    { title: 'Add Users', value: 'Add Users', icon: 'mdi:account-multiple-plus' },
+    { title: 'Countries', value: 'Countries', icon: 'icomoon-free:earth' },
+];
+
+export const SYSTEM_ROLES = ['Pending', 'Admin', 'User', 'Staff', 'QR-Code generator', 'QR-Code all documents verifier'] as const;
