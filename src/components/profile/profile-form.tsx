@@ -2,7 +2,7 @@
 import type React from "react"
 
 import { toast } from "sonner"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import RoleDisplay from "./role-display"
 import { useUpdateProfile } from "@/hooks"
 import { Input } from "@/components/ui/input"
@@ -12,13 +12,15 @@ import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/store/use-auth-store"
 import { Loader2, Upload, Trash2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { fileService } from "@/services/upload/file.service"
+import { useServeFileById } from "@/hooks/upload/use-file"
 
 const ProfileForm = () => {
     const { t } = useTranslation();
-    const { user,  setUser } = useAuthStore()
+    const { user, setUser } = useAuthStore()
     const [firstName, setFirstName] = useState(user?.firstName || "")
     const [lastName, setLastName] = useState(user?.lastName || "")
-    const [photo, setPhoto] = useState<string | null>(user?.photo || null)
+    const [photoId, setPhotoId] = useState<string | null>(user?.photo || null)
     const [isUpdating, setIsUpdating] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
@@ -26,85 +28,82 @@ const ProfileForm = () => {
 
     const updateProfileMutation = useUpdateProfile()
 
-    const uploadImage = async (formData: FormData) => {
+    // Use the hook to get file content and convert to blob URL
+    const { 
+        data: imageUrl, 
+        isLoading: isLoadingImage, 
+        error: imageError 
+    } = useServeFileById(photoId || '');
+
+    useEffect(() => {
+        if (user?.photo) {
+            setPhotoId(user.photo);
+        }
+    }, [user]);
+
+    const uploadImage = async (file: File) => {
         try {
             setIsUploading(true)
-            const response = await fetch("/api/upload", {
-                method: "POST",
-                body: formData,
-            })
+            const response = await fileService.uploadFile({ file, folder: 'profile-photos' });
+            
+            if (response.id) {
+                const updateResponse = await updateProfileMutation.mutateAsync({
+                    userId: user?.id || '',
+                    firstName,
+                    lastName,
+                    photo: response.id
+                });
 
-            if (!response.ok) {
-                throw new Error("Failed to upload image")
+                setPhotoId(response.id);
+                setUser(updateResponse);
+                toast.success(t('profile.profilePictureUploadedSuccessfully'));
+            } else {
+                toast.error(t('profile.failedToUploadProfilePicture'));
             }
-
-            const responseData = await response.json()
-
-            const updateResponse = await updateProfileMutation.mutateAsync({
-                userId: user?.id || '',
-                firstName,
-                lastName,
-                photo: responseData.filename
-            })
-
-            setPhoto(responseData.filename)
-            setUser(updateResponse.user)
-            toast.success(t('profile.profilePictureUploadedSuccessfully'))
-
-            return responseData.filename
         } catch (error) {
-            console.error("Upload error", error)
-            toast.error(t('profile.failedToUploadProfilePicture'))
-            return null
+            console.error("Upload error", error);
+            toast.error(t('profile.failedToUploadProfilePicture'));
         } finally {
-            setIsUploading(false)
+            setIsUploading(false);
         }
     }
 
-    const deleteImage = async (fileName: string) => {
+    const deleteImage = async (fileId: string) => {
         try {
-            setIsDeleting(true)
-            const response = await fetch("/api/upload", {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ fileName }),
-            })
+            setIsDeleting(true);
+            const response = await fileService.deleteFile(fileId);
+            
+            if (response.success) {
+                const updateResponse = await updateProfileMutation.mutateAsync({
+                    userId: user?.id || '',
+                    firstName,
+                    lastName,
+                    photo: ""
+                });
 
-            const updateResponse = await updateProfileMutation.mutateAsync({
-                userId: user?.id || '',
-                firstName,
-                lastName,
-                photo: ""
-            })
+                setPhotoId(null);
+                setUser(updateResponse);
 
-            if (!response.ok) {
-                throw new Error("Failed to delete image")
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                }
+
+                toast.success(t('profile.profilePictureRemovedSuccessfully'));
+            } else {
+                toast.error(t('profile.failedToRemoveProfilePicture'));
             }
-
-            setPhoto(null)
-            setUser(updateResponse.user)
-
-            if (fileInputRef.current) {
-                fileInputRef.current.value = ""
-            }
-
-            toast.success(t('profile.profilePictureRemovedSuccessfully'))
         } catch (error) {
-            console.error("Delete error", error)
-            toast.error(t('profile.failedToRemoveProfilePicture'))
+            console.error("Delete error", error);
+            toast.error(t('profile.failedToRemoveProfilePicture'));
         } finally {
-            setIsDeleting(false)
+            setIsDeleting(false);
         }
     }
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0]
-            const formData = new FormData()
-            formData.append("file", selectedFile)
-            await uploadImage(formData)
+            const selectedFile = e.target.files[0];
+            await uploadImage(selectedFile);
         }
     }
 
@@ -115,8 +114,8 @@ const ProfileForm = () => {
     }
 
     const handleImageDeleteClick = () => {
-        if (photo) {
-            deleteImage(photo)
+        if (photoId) {
+            deleteImage(photoId);
         }
     }
 
@@ -130,7 +129,7 @@ const ProfileForm = () => {
                 userId: user?.id || '',
                 firstName,
                 lastName,
-                photo: photo ? photo : undefined
+                photo: photoId ? photoId : undefined
             })
 
             if (!response) {
@@ -154,7 +153,11 @@ const ProfileForm = () => {
             <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 mb-8">
                 <div className="flex flex-col items-center gap-4">
                     <Avatar className="w-24 h-24">
-                        <AvatarImage src={photo ? `/api/uploads/${photo}` : undefined} alt={`${firstName} ${lastName}`} className="object-cover" />
+                        <AvatarImage 
+                            src={imageUrl || undefined} 
+                            alt={`${firstName} ${lastName}`} 
+                            className="object-cover" 
+                        />
                         <AvatarFallback className="text-xl">
                             {firstName && lastName ? `${firstName[0]}${lastName[0]}` : user?.email?.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
@@ -181,7 +184,7 @@ const ProfileForm = () => {
                             )}
                         </Button>
 
-                        {photo && (
+                        {photoId && (
                             <Button
                                 type="button"
                                 variant="outline"

@@ -12,6 +12,9 @@ const GenerateQrCode = lazy(() => import('@/pages/app/qr-code/generate-qr-code')
 const MyDocuments = lazy(() => import('@/pages/app/qr-code/my-documents'));
 const AllDocuments = lazy(() => import('@/pages/app/qr-code/all-documents'));
 
+// Profile page
+const ProfilePage = lazy(() => import('@/pages/app/profile'));
+
 export const userRoutes: RouteConfig[] = [
   {
     path: "",
@@ -92,6 +95,18 @@ export const userRoutes: RouteConfig[] = [
     meta: {
       title: "All Documents | UzaForm",
       description: "View and manage all QR code documents",
+    },
+  },
+  {
+    path: "profile",
+    element: (
+      <ComponentSuspense>
+        <ProfilePage />
+      </ComponentSuspense>
+    ),
+    meta: {
+      title: "Profile | UzaForm",
+      description: "Manage your profile information and security settings",
     },
   },
 ];

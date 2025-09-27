@@ -3,8 +3,10 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Cookies } from "react-cookie";
 
-export const API_URL = (window as any)._env_.BACKEND_URL as string;
-// export const API_URL = import.meta.env.BACKEND_URL;
+const NODE_ENV = import.meta.env.VITE_NODE_ENV;
+console.log(NODE_ENV);
+
+export const API_URL = NODE_ENV === "development" ? import.meta.env.VITE_BACKEND_URL : (window as any)._env_.BACKEND_URL as string;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
