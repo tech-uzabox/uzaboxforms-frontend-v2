@@ -34,7 +34,6 @@ const ManagementSettings = () => {
       <ManagementHeader
         title={t("processManagement.managementSettings")}
         description={t("processManagement.manageHeaderFooterImages")}
-        badgeText={t("processManagement.imageManagement")}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

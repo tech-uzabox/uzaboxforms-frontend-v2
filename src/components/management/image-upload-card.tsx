@@ -150,9 +150,6 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
                 src={image.fileUrl}
                 alt={type}
                 className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder-image.png";
-                }}
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                 <Icon
